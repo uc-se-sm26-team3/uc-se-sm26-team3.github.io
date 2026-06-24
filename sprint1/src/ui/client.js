@@ -65,3 +65,25 @@ socket.on('status', function(data) {
     // AC-02.3 (UI): auto-scroll to the latest message
     statusElm.scrollTop = statusElm.scrollHeight;
 });
+
+// =============================================================================
+// Use-Case-10: View Online Users
+// =============================================================================
+var myUsername = null;
+
+socket.on("username", (username)=> {
+    myUsername = username
+    var welcome = document.getElementById('welcome')
+    welcome.innerHTML = "Welcome " + myUsername;
+})
+
+var onlineUserList = document.getElementById('online-users-list');
+socket.on('userlist', function(data) {
+    onlineUserList.innerHTML = '';
+    for (var i = 0; i < data.length; i++) {
+        if (data[i] === myUsername) continue;
+        var li = document.createElement('li');
+        li.innerHTML = data[i];
+        onlineUserList.appendChild(li);
+    }
+});

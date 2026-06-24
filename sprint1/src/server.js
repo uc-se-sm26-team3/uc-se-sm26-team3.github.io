@@ -21,12 +21,14 @@ io.on('connection', (socket) => {
 
   // Auto-assign a unique username from the socket ID
   const username = 'User_' + socket.id.slice(-5);
+  socket.emit('username', username) //Send the user their assigned username
   userlist.set(socket.id, username);
   console.log('New client connected - socket ID: ' + socket.id )
 
   //UC-02 (AC-02.1): notify all connected clients that a new user joined
   io.emit('status', username +
     ' joined the chat. Number of connected clients: ' + userlist.size);
+  io.emit('userlist', Array.from(userlist.values())); //Send the user the list of online users
 
   // ---------------------------------------------------------------------------
   // Use-Case-01: Send message
@@ -58,5 +60,6 @@ io.on('connection', (socket) => {
     console.log('Client disconnected - socket ID: ' + socket.id);
     io.emit('status', username +
       ' left the chat. Number of connected clients: ' + userlist.size);
+    io.emit('userlist', Array.from(userlist.values())); //Send new user list to all users
   });
 });
