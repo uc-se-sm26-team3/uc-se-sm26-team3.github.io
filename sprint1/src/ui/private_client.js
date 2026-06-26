@@ -1,4 +1,4 @@
-var socket = io(); //connect to the Socket.io Server
+import {socket} from "./client.js";
 
 // UI DOM references
 var privateButton = document.getElementById('send-private-button');

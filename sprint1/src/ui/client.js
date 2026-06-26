@@ -4,6 +4,8 @@
  * ===============================================================================
  */
 var socket = io(); //connect to the Socket.io Server
+export {socket};
+
 socket.on("connect", () => { //connected to the server
   console.log(`Connected to Socket.io server: 
     ${socket.io.opts.hostname}, port: ${socket.io.opts.port}`);
