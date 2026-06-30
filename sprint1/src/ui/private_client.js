@@ -52,6 +52,6 @@ function displayPrivateMessage({ username: username, message: message }) {
     var d = document.createElement('div');
     // AC-02.2: shows timestamp for each message
     var timestamp = new Date().toLocaleTimeString();
-    d.innerHTML = '[' + timestamp + '] <i style="color:red">(PRIVATE)</i> ' + message;
+    d.innerHTML = '[' + timestamp + '] <i style="color:red">(PRIVATE)</i> ' + DOMPurify.sanitize(message);
     document.getElementById('responses').appendChild(d);
 }

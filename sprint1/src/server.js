@@ -9,6 +9,17 @@ const path = require('path');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
+// AC-02.6 (Security): CSP header — browser-level defense-in-depth
+app.use((req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; \
+    script-src 'self' https://cdnjs.cloudflare.com; \
+    style-src 'self' 'unsafe-inline'; \
+    connect-src 'self' https://cdnjs.cloudflare.com"
+  );
+  next();
+});
 app.use(express.static(path.join(__dirname, 'ui')));
 
 const PORT = process.env.PORT || 8080;

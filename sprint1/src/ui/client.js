@@ -53,7 +53,7 @@ function displayMessage(data) {
     var d = document.createElement('div');
     // AC-02.2: shows timestamp for each message
     var timestamp = new Date().toLocaleTimeString();
-    d.innerHTML = '[' + timestamp + '] ' + data;
+    d.innerHTML = '[' + timestamp + '] ' + DOMPurify.sanitize(data); //AC-02.5: Messages are sanatized
     document.getElementById('responses').appendChild(d);
 }
 
@@ -63,7 +63,7 @@ socket.on('status', function(data) {
     // AC-02.2: shows timestamp for each message
     var timestamp = new Date().toLocaleTimeString();
     statusElm.innerHTML = statusElm.innerHTML +
-    '<br>[' + timestamp + '] ' + data;
+    '<br>[' + timestamp + '] ' + DOMPurify.sanitize(data);
     // AC-02.3 (UI): auto-scroll to the latest message
     statusElm.scrollTop = statusElm.scrollHeight;
 });
@@ -76,16 +76,16 @@ var myUsername = null;
 socket.on("username", (username)=> {
     myUsername = username
     var welcome = document.getElementById('welcome')
-    welcome.innerHTML = "Welcome " + myUsername;
+    welcome.innerHTML = "Welcome " + DOMPurify.sanitize(myUsername);
 })
-
+//AC-10.1: Online users are displayed in a list, styling will be added separately
 var onlineUserList = document.getElementById('online-users-list');
 socket.on('userlist', function(data) {
     onlineUserList.innerHTML = '';
     for (var i = 0; i < data.length; i++) {
         if (data[i] === myUsername) continue;
         var li = document.createElement('li');
-        li.innerHTML = data[i];
+        li.innerHTML = DOMPurify.sanitize(data[i]); //AC-10.3: Usernames are sanatized
         onlineUserList.appendChild(li);
     }
 });
