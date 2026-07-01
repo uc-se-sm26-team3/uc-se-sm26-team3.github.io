@@ -2,13 +2,24 @@
 // EECE/CS 3093C Software Engineering — Lab 1
 // server.js — code skeleton provided by Phu Phung
 // =============================================================================
-const express    = require('express');
-const http       = require('http');
+const express = require('express');
+const http = require('http');
 const { Server } = require('socket.io');
-const path       = require('path');
-const app    = express();
+const path = require('path');
+const app = express();
 const server = http.createServer(app);
-const io     = new Server(server);
+const io = new Server(server);
+// AC-02.6 (Security): CSP header — browser-level defense-in-depth
+app.use((req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; \
+    script-src 'self' https://cdnjs.cloudflare.com; \
+    style-src 'self' 'unsafe-inline'; \
+    connect-src 'self' https://cdnjs.cloudflare.com"
+  );
+  next();
+});
 app.use(express.static(path.join(__dirname, 'ui')));
 
 const PORT = process.env.PORT || 8080;
@@ -23,7 +34,7 @@ io.on('connection', (socket) => {
   const username = 'User_' + socket.id.slice(-5);
   socket.emit('username', username) //Send the user their assigned username
   userlist.set(socket.id, username);
-  console.log('New client connected - socket ID: ' + socket.id )
+  console.log('New client connected - socket ID: ' + socket.id)
 
   //UC-02 (AC-02.1): notify all connected clients that a new user joined
   io.emit('status', username +
@@ -61,5 +72,34 @@ io.on('connection', (socket) => {
     io.emit('status', username +
       ' left the chat. Number of connected clients: ' + userlist.size);
     io.emit('userlist', Array.from(userlist.values())); //Send new user list to all users
+  });
+
+  // Private messages
+  socket.on('private-message', ({ username: username, message: message }) => {
+    // AC-01.2: ignore empty messages
+    if (!message || message.trim() === '') return;
+    if (!username || username.trim() === '') return;
+    // AC-01.3 + AC-01.4: broadcast to all clients with sender username
+    const sender = userlist.get(socket.id);
+
+    // Find recipient socket ID
+    const recipientId = [...userlist.entries()]
+      .find(([id, name]) => name === username)?.[0];
+
+    if (!recipientId) {
+      console.log(`User "${username}" not found.`);
+      return;
+    }
+
+    console.log(`Debug> "${sender}" sent to ${username}: ${message}`);
+
+    let data = {
+      username: sender,
+      message: sender + ' says: ' + message.trim()
+    }
+
+    // Send to both the recipient and sender
+    io.to(recipientId).emit('private-message', data);
+    io.to(socket.id).emit('private-message', data);
   });
 });

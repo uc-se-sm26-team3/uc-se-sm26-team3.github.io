@@ -4,6 +4,8 @@
  * ===============================================================================
  */
 var socket = io(); //connect to the Socket.io Server
+export {socket};
+
 socket.on("connect", () => { //connected to the server
   console.log(`Connected to Socket.io server: 
     ${socket.io.opts.hostname}, port: ${socket.io.opts.port}`);
@@ -51,7 +53,7 @@ function displayMessage(data) {
     var d = document.createElement('div');
     // AC-02.2: shows timestamp for each message
     var timestamp = new Date().toLocaleTimeString();
-    d.innerHTML = '[' + timestamp + '] ' + data;
+    d.innerHTML = '[' + timestamp + '] ' + DOMPurify.sanitize(data); //AC-02.5: Messages are sanatized
     document.getElementById('responses').appendChild(d);
 }
 
@@ -61,7 +63,7 @@ socket.on('status', function(data) {
     // AC-02.2: shows timestamp for each message
     var timestamp = new Date().toLocaleTimeString();
     statusElm.innerHTML = statusElm.innerHTML +
-    '<br>[' + timestamp + '] ' + data;
+    '<br>[' + timestamp + '] ' + DOMPurify.sanitize(data);
     // AC-02.3 (UI): auto-scroll to the latest message
     statusElm.scrollTop = statusElm.scrollHeight;
 });
@@ -74,16 +76,30 @@ var myUsername = null;
 socket.on("username", (username)=> {
     myUsername = username
     var welcome = document.getElementById('welcome')
-    welcome.innerHTML = "Welcome " + myUsername;
+    welcome.innerHTML = "Welcome " + DOMPurify.sanitize(myUsername);
 })
-
+//AC-10.1: Online users are displayed in a list, styling will be added separately
 var onlineUserList = document.getElementById('online-users-list');
 socket.on('userlist', function(data) {
     onlineUserList.innerHTML = '';
     for (var i = 0; i < data.length; i++) {
         if (data[i] === myUsername) continue;
         var li = document.createElement('li');
-        li.innerHTML = data[i];
+        li.innerHTML = DOMPurify.sanitize(data[i]); //AC-10.3: Usernames are sanatized
         onlineUserList.appendChild(li);
     }
 });
+// =============================================================================
+// Use-Case-4: Login and create account
+// =============================================================================
+document.getElementById('joinBtn').addEventListener('click', joinChat);
+function joinChat() {
+    const username = document.getElementById('username').value;
+    const pattern = /^\w{3,20}$/;
+    if (!username || !pattern.test(username)) {
+        alert("Username cannot be empty and must be between 3-20 characters long!");
+        return;
+    }
+    document.getElementById('loginUI').style.display = 'none';
+    document.getElementById('chatUI').style.display = '';
+};
