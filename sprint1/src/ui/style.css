@@ -39,6 +39,10 @@ body {
 
     box-shadow:0 20px 40px rgba(0,0,0,.15);
 
+    margin:25px;
+
+    margin-left: 12.5px;
+
 }
 
 .titlecontainer{
@@ -54,6 +58,8 @@ body {
     box-shadow:0 20px 40px rgba(0,0,0,.15);
 
     margin:25px;
+
+    margin-right: 12.5px;
 
 }
 
