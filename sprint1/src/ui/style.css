@@ -21,6 +21,12 @@ body {
 
 }
 
+.chatUI{
+    display: flex;
+    align-items: flex-start; /* Align the tops */
+    gap: 25px;               /* Space between them */
+}
+
 .container{
 
     width:75%;
@@ -40,9 +46,6 @@ body {
     width:fit-content;
 
     background-color: rgba(255, 255, 255, 0.5);
-    width:750px;
-
-    background:white;
 
     border-radius:25px;
 
