@@ -9,6 +9,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.7/purify.min.js"
   integrity="sha512-78KH17QLT5e55GJqP76vutp1D2iAoy06WcYBXB6iBCsmO6wWzx0Qdg8EDpm8mKXv68BcvHOyeeP4wxAL0twJGQ=="
   crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://code.jquery.com/jquery-4.0.0.js" integrity="sha256-9fsHeVnKBvqh3FB2HYu7g2xseAZ5MlN6Kz/qnkASV8U=" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -44,31 +45,31 @@
 
     <br>
 
-    <div>
-      Private message:
-      <input id="private-username" type="text" autocomplete="off" placeholder="Type a username…" style="width:150px;" />
-      <input id="private-message" type="text" autocomplete="off" placeholder="Type a private message…"
-        style="width:450px;" />
-      <button id="send-private-button">Send</button>
-    </div>
-
-    <br>
-
-    <b>System status: </b><br>
-    <div id="status" style="width:625px; height:75px; overflow-y:scroll;"></div>
-    <b>Chat Responses:</b><br>
-    <div id="responses"></div>
-
-    <br>
-
-    <h2>Online Users</h2>
-    <ul id="online-users-list"></ul>
-
-    <br>
-
-    <script type="module" src="client.js"></script>
-    <script type="module" src="private_client.js"></script>
+  <div>
+    Private message:
+    <input id="private-username" type="text" autocomplete="off" placeholder="Type a username…" style="width:150px;" />
+    <input id="private-message" type="text" autocomplete="off" placeholder="Type a private message…"
+      style="width:450px;" />
+    <button id="send-private-button">Send</button>
+    <div id="private-typing"></div>
   </div>
+
+  <br>
+
+  <b>System status: </b><br>
+  <div id="status" style="width:625px; height:75px; overflow-y:scroll;"></div>
+  <b>Chat Responses:</b><br>
+  <div id="responses"></div>
+
+  <br>
+
+  <h2>Online Users</h2>
+  <ul id="online-users-list"></ul>
+
+  <br>
+
+  <script type="module" src="client.js"></script>
+  <script type="module" src="private_client.js"></script>
 </body>
 
 </html>
