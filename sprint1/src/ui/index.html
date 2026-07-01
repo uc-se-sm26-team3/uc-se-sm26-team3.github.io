@@ -45,6 +45,59 @@
 
     <br>
 
+<div class="bubbles">
+<! ---This is what adds our little bubbles to the background --->
+    <div class="bubble bubble-1"></div>
+    <div class="bubble bubble-2"></div>
+    <div class="bubble bubble-3"></div>
+    <div class="bubble bubble-4"></div>
+    <div class="bubble bubble-5"></div>
+    <div class="bubble bubble-6"></div>
+    <div class="bubble bubble-7"></div>
+    <div class="bubble bubble-8"></div>
+
+</div>
+
+<div class = "titlecontainer">
+  <h1>Bubble</h1>
+  <h2>Simple Messenger — EECE/CS 3093C Lab 1</h2>
+
+  <div class="panel">
+    <b>System status: </b><br>
+    <div id="status" style="width:100%; height:75px; overflow-y:scroll;"></div>
+  </div>
+
+   <div class="panel">
+    <b>Online Users</b>
+    <ul id="online-users-list" style="width:100%; height:75px; overflow-y:scroll;"></ul>
+    <script src="client.js"></script>
+  </div>
+</div>
+
+<div class="container">
+<! ---Everything is in this box rn. Maybe move online users and system status to a side box? --->
+
+  <br>
+  <b><div id = "welcome"></div></b>
+
+  <div class="message-box">
+  Chat message:  
+  <input id="chat-message" type="text" autocomplete="off" placeholder="Type a message…" style="width:450px;" />  
+  <button id="send-button">Send</button>
+  </div>
+
+
+
+  <b>Chat Responses:</b><br>
+  <div class="panel">
+    <div id="responses"></div>
+  </div>
+  <br>
+
+
+</div>
+
+<script src="client.js"></script>
     <div>
       Private message:
       <input id="private-username" type="text" autocomplete="off" placeholder="Type a username…" style="width:150px;" />
