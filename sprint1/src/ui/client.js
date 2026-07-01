@@ -28,7 +28,8 @@ if(!chatMessageInput) {
 }
 // AC-01.2 (UI): pressing Enter also triggers sendMessage()
 chatMessageInput.addEventListener('keypress', function(e) {
-  if (e.key === 'Enter') sendMessage();
+    socket.emit('typing');
+    if (e.key === 'Enter') sendMessage();
 });
 
 // =============================================================================
@@ -89,3 +90,59 @@ socket.on('userlist', function(data) {
         onlineUserList.appendChild(li);
     }
 });
+
+const typingUsers = new Set();
+const typingTimeouts = new Map();
+
+socket.on("typing", displayPrivateTyping);
+
+function displayPrivateTyping({username}) {
+    typingUsers.add(username); //Add the user to a typing status
+
+    // Reset this user's timeout
+    if (typingTimeouts.has(username)) {
+        clearTimeout(typingTimeouts.get(username));
+    }
+
+    // Set a new timeout to delete the user from the typing status
+    typingTimeouts.set(username, setTimeout(() => {
+        typingUsers.delete(username);
+        typingTimeouts.delete(username);
+        updateTypingDisplay();
+    }, 1000));
+
+    updateTypingDisplay();
+}
+
+function updateTypingDisplay() {
+    const $typing = $("#typing");
+
+    // Remove the typing status element if there is nobody typing
+    if (typingUsers.size === 0) {
+        $typing.hide().text("");
+        return;
+    }
+
+    const users = [...typingUsers];
+    console.log(users)
+
+    let message;
+
+    switch (users.length) {
+        case 1:
+            message = `${users[0]} is typing...`;
+            break;
+        case 2:
+            message = `${users[0]} and ${users[1]} are typing...`;
+            break;
+        case 3:
+            message = `${users[0]}, ${users[1]}, and ${users[2]} are typing...`;
+            break;
+        default:
+            message = `${users[0]}, ${users[1]}, and ${users.length - 2} others are typing...`;
+    }
+
+    $typing
+        .show()
+        .text(DOMPurify.sanitize(message));
+}

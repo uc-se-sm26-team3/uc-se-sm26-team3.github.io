@@ -14,7 +14,7 @@ app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
     "default-src 'self'; \
-    script-src 'self' https://cdnjs.cloudflare.com; \
+    script-src 'self' https://cdnjs.cloudflare.com https://code.jquery.com; \
     style-src 'self' 'unsafe-inline'; \
     connect-src 'self' https://cdnjs.cloudflare.com"
   );
@@ -101,5 +101,30 @@ io.on('connection', (socket) => {
     // Send to both the recipient and sender
     io.to(recipientId).emit('private-message', data);
     io.to(socket.id).emit('private-message', data);
+  });
+
+  socket.on('typing', () => {
+    const sender = userlist.get(socket.id);
+    data = {
+      username: sender
+    };
+    socket.broadcast.emit('typing', data);
+  });
+
+  socket.on('private-typing', (username) => {
+    if (!username || username.trim() === '') return;
+    const sender = userlist.get(socket.id);
+
+    // Find recipient socket ID
+    const recipientId = [...userlist.entries()]
+      .find(([id, name]) => name === username)?.[0];
+
+    if (!recipientId) return; //Nobody to send typing indicator to
+
+    let data = {
+      username: sender
+    }
+
+    io.to(recipientId).emit('private-typing', data);
   });
 });

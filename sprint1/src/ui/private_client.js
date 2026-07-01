@@ -25,6 +25,8 @@ privateUsernameInput.addEventListener('keypress', function (e) {
 
 // AC-01.2 (UI): pressing Enter also triggers sendMessage()
 privateMessageInput.addEventListener('keypress', function (e) {
+    var username = privateUsernameInput.value.trim();
+    if (username) socket.emit('private-typing', username);
     if (e.key === 'Enter') sendPrivateMessage();
 });
 
@@ -54,4 +56,60 @@ function displayPrivateMessage({ username: username, message: message }) {
     var timestamp = new Date().toLocaleTimeString();
     d.innerHTML = '[' + timestamp + '] <i style="color:red">(PRIVATE)</i> ' + DOMPurify.sanitize(message);
     document.getElementById('responses').appendChild(d);
+}
+
+const typingUsers = new Set();
+const typingTimeouts = new Map();
+
+socket.on("private-typing", displayPrivateTyping);
+
+function displayPrivateTyping({username}) {
+    typingUsers.add(username); //Add the user to a typing status
+
+    // Reset this user's timeout
+    if (typingTimeouts.has(username)) {
+        clearTimeout(typingTimeouts.get(username));
+    }
+
+    // Set a new timeout to delete the user from the typing status
+    typingTimeouts.set(username, setTimeout(() => {
+        typingUsers.delete(username);
+        typingTimeouts.delete(username);
+        updateTypingDisplay();
+    }, 1000));
+
+    updateTypingDisplay();
+}
+
+function updateTypingDisplay() {
+    const $typing = $("#private-typing");
+
+    // Remove the typing status element if there is nobody typing
+    if (typingUsers.size === 0) {
+        $typing.hide().text("");
+        return;
+    }
+
+    const users = [...typingUsers];
+    console.log(users)
+
+    let message;
+
+    switch (users.length) {
+        case 1:
+            message = `${users[0]} is typing a private message...`;
+            break;
+        case 2:
+            message = `${users[0]} and ${users[1]} are typing private messages...`;
+            break;
+        case 3:
+            message = `${users[0]}, ${users[1]}, and ${users[2]} are typing private messages...`;
+            break;
+        default:
+            message = `${users[0]}, ${users[1]}, and ${users.length - 2} others are typing private messages...`;
+    }
+
+    $typing
+        .show()
+        .text(DOMPurify.sanitize(message));
 }
