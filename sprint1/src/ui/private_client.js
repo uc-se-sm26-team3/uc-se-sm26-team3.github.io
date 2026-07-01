@@ -1,4 +1,4 @@
-import {socket} from "./client.js";
+import { socket } from "./client.js";
 
 // UI DOM references
 var privateButton = document.getElementById('send-private-button');
@@ -63,7 +63,7 @@ const typingTimeouts = new Map();
 
 socket.on("private-typing", displayPrivateTyping);
 
-function displayPrivateTyping({username}) {
+function displayPrivateTyping({ username }) {
     typingUsers.add(username); //Add the user to a typing status
 
     // Reset this user's timeout

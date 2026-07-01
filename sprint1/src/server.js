@@ -34,20 +34,20 @@ io.on('connection', (socket) => {
     // Auto-assign a unique username from the socket ID
     const pattern = /^\w{3,20}$/;
     if (!username || !pattern.test(username)) {
-        socket.emit("username", {success: false, message: "Username too short!"});
-        return;
+      socket.emit("username", { success: false, message: "Username too short!" });
+      return;
     }
 
     // Compare usernames case-insensitively
     const normalized = username.toLowerCase();
     const taken = [...userlist.values()]
-        .some(name => name.toLowerCase() === normalized);
+      .some(name => name.toLowerCase() === normalized);
     if (taken) {
-        socket.emit("username", {success: false, message: "Username already taken!"});
-        return;
+      socket.emit("username", { success: false, message: "Username already taken!" });
+      return;
     }
 
-    socket.emit('username', {success: true, message: username}) //Send the user their assigned username
+    socket.emit('username', { success: true, message: username }) //Send the user their assigned username
     userlist.set(socket.id, username);
     console.log('New client connected - socket ID: ' + socket.id)
     socket.join("logged-in");
