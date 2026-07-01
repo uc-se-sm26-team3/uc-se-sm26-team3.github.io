@@ -73,10 +73,16 @@ socket.on('status', function(data) {
 // =============================================================================
 var myUsername = null;
 
-socket.on("username", (username)=> {
-    myUsername = username
+socket.on("username", ({success, message})=> {
+    if (!success) {
+        alert(message);
+        return;
+    }
+    myUsername = message;
     var welcome = document.getElementById('welcome')
     welcome.innerHTML = "Welcome " + DOMPurify.sanitize(myUsername);
+    document.getElementById('loginUI').style.display = 'none';
+    document.getElementById('chatUI').style.display = '';
 })
 //AC-10.1: Online users are displayed in a list, styling will be added separately
 var onlineUserList = document.getElementById('online-users-list');
@@ -100,6 +106,5 @@ function joinChat() {
         alert("Username cannot be empty and must be between 3-20 characters long!");
         return;
     }
-    document.getElementById('loginUI').style.display = 'none';
-    document.getElementById('chatUI').style.display = '';
+    socket.emit('username', username)
 };

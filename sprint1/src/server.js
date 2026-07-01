@@ -30,16 +30,33 @@ const userlist = new Map();
 
 io.on('connection', (socket) => {
 
-  // Auto-assign a unique username from the socket ID
-  const username = 'User_' + socket.id.slice(-5);
-  socket.emit('username', username) //Send the user their assigned username
-  userlist.set(socket.id, username);
-  console.log('New client connected - socket ID: ' + socket.id)
+  socket.on("username", (username) => {
+    // Auto-assign a unique username from the socket ID
+    const pattern = /^\w{3,20}$/;
+    if (!username || !pattern.test(username)) {
+        socket.emit("username", {success: false, message: "Username too short!"});
+        return;
+    }
 
-  //UC-02 (AC-02.1): notify all connected clients that a new user joined
-  io.emit('status', username +
-    ' joined the chat. Number of connected clients: ' + userlist.size);
-  io.emit('userlist', Array.from(userlist.values())); //Send the user the list of online users
+    // Compare usernames case-insensitively
+    const normalized = username.toLowerCase();
+    const taken = [...userlist.values()]
+        .some(name => name.toLowerCase() === normalized);
+    if (taken) {
+        socket.emit("username", false);
+        return;
+    }
+
+    socket.emit('username', {success: true, message: username}) //Send the user their assigned username
+    userlist.set(socket.id, username);
+    console.log('New client connected - socket ID: ' + socket.id)
+    socket.join("logged-in");
+
+    //UC-02 (AC-02.1): notify all connected clients that a new user joined
+    io.to("logged-in").emit('status', username +
+      ' joined the chat. Number of connected clients: ' + userlist.size);
+    io.to("logged-in").emit('userlist', Array.from(userlist.values())); //Send the user the list of online users
+  });
 
   // ---------------------------------------------------------------------------
   // Use-Case-01: Send message
@@ -52,12 +69,14 @@ io.on('connection', (socket) => {
   // AC-01.5: input is cleared after sending (enforced client-side)
   // ---------------------------------------------------------------------------
   socket.on('message', (data) => {
+    const sender = userlist.get(socket.id);
+    if (!sender) return; // User hasn't logged in yet
+
     // AC-01.2: ignore empty messages
     if (!data || data.trim() === '') return;
     // AC-01.3 + AC-01.4: broadcast to all clients with sender username
-    const sender = userlist.get(socket.id);
     console.log(`Debug> "${sender}" sent: ${data}`);
-    io.emit('message', sender + ' says: ' + data.trim());
+    io.to("logged-in").emit('message', sender + ' says: ' + data.trim());
   });
 
   // ---------------------------------------------------------------------------
@@ -67,11 +86,13 @@ io.on('connection', (socket) => {
   // ---------------------------------------------------------------------------
   socket.on('disconnect', () => {
     const username = userlist.get(socket.id);
+    if (!username) return;
     userlist.delete(socket.id);
     console.log('Client disconnected - socket ID: ' + socket.id);
-    io.emit('status', username +
+    io.to("logged-in").emit('status', username +
       ' left the chat. Number of connected clients: ' + userlist.size);
-    io.emit('userlist', Array.from(userlist.values())); //Send new user list to all users
+    io.to("logged-in").emit('userlist', Array.from(userlist.values())); //Send new user list to all users
+    socket.leave("logged-in");
   });
 
   // Private messages
