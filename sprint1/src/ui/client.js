@@ -89,3 +89,17 @@ socket.on('userlist', function(data) {
         onlineUserList.appendChild(li);
     }
 });
+// =============================================================================
+// Use-Case-: Login
+// =============================================================================
+document.getElementById('joinBtn').addEventListener('click', joinChat);
+function joinChat() {
+    const username = document.getElementById('username').value;
+    const pattern = /^\w{3,20}$/;
+    if (!username || !pattern.test(username)) {
+        alert("Username cannot be empty and must be between 3-20 characters long!");
+        return;
+    }
+    document.getElementById('loginUI').style.display = 'none';
+    document.getElementById('chatUI').style.display = '';
+};
