@@ -43,7 +43,7 @@ io.on('connection', (socket) => {
     const taken = [...userlist.values()]
         .some(name => name.toLowerCase() === normalized);
     if (taken) {
-        socket.emit("username", false);
+        socket.emit("username", {success: false, message: "Username already taken!"});
         return;
     }
 
