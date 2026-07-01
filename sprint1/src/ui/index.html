@@ -7,57 +7,70 @@
   <title>Simple Messenger — EECE/CS 3093C Lab 1</title>
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.7/purify.min.js"
-  integrity="sha512-78KH17QLT5e55GJqP76vutp1D2iAoy06WcYBXB6iBCsmO6wWzx0Qdg8EDpm8mKXv68BcvHOyeeP4wxAL0twJGQ=="
-  crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://code.jquery.com/jquery-4.0.0.js" integrity="sha256-9fsHeVnKBvqh3FB2HYu7g2xseAZ5MlN6Kz/qnkASV8U=" crossorigin="anonymous"></script>
+    integrity="sha512-78KH17QLT5e55GJqP76vutp1D2iAoy06WcYBXB6iBCsmO6wWzx0Qdg8EDpm8mKXv68BcvHOyeeP4wxAL0twJGQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://code.jquery.com/jquery-4.0.0.js" integrity="sha256-9fsHeVnKBvqh3FB2HYu7g2xseAZ5MlN6Kz/qnkASV8U="
+    crossorigin="anonymous"></script>
 </head>
 
 <body>
+  <div id="loginUI">
+    <h1>Simple Messenger — V3.0</h1>
+    <h3>By Team 3 (Zach Fowler, Alex May, Divya Nandigala, Lincoln Warren, Molly Moser)</h3>
+    <br>
+    <input type="text" id="username" placeholder="Username" pattern="\w{3,20}" required
+      title="Username must be between 3-20 characters" />
 
-  <h1>Simple Messenger — EECE/CS 3093C Lab 1</h1>
-
-  <br>
-
-  <b>
-    <div id="welcome"></div>
-  </b>
-
-  <br>
-
-  <div>
-    Chat message:
-    <input id="chat-message" type="text" autocomplete="off" placeholder="Type a message…" style="width:450px;" />
-    <button id="send-button">Send</button>
-    <div id="typing"></div>
+    <!-- <input type = "password" id="password" placeholder="Password" /> -->
+    <br>
+    <button class="button" id="joinBtn">Join Chat</button>
   </div>
 
-  <br>
+  <div id="chatUI" style="display: none">
+    <h1>Simple Messenger — EECE/CS 3093C Lab 1</h1>
 
-  <div>
-    Private message:
-    <input id="private-username" type="text" autocomplete="off" placeholder="Type a username…" style="width:150px;" />
-    <input id="private-message" type="text" autocomplete="off" placeholder="Type a private message…"
-      style="width:450px;" />
-    <button id="send-private-button">Send</button>
-    <div id="private-typing"></div>
-  </div>
+    <br>
 
-  <br>
+    <b>
+      <div id="welcome"></div>
+    </b>
 
-  <b>System status: </b><br>
-  <div id="status" style="width:625px; height:75px; overflow-y:scroll;"></div>
-  <b>Chat Responses:</b><br>
-  <div id="responses"></div>
+    <br>
 
-  <br>
+    <div>
+      Chat message:
+      <input id="chat-message" type="text" autocomplete="off" placeholder="Type a message…" style="width:450px;" />
+      <button id="send-button">Send</button>
+      <div id="typing"></div>
+    </div>
 
-  <h2>Online Users</h2>
-  <ul id="online-users-list"></ul>
+    <br>
 
-  <br>
+    <div>
+      Private message:
+      <input id="private-username" type="text" autocomplete="off" placeholder="Type a username…" style="width:150px;" />
+      <input id="private-message" type="text" autocomplete="off" placeholder="Type a private message…"
+        style="width:450px;" />
+      <button id="send-private-button">Send</button>
+      <div id="private-typing"></div>
+    </div>
 
-  <script type="module" src="client.js"></script>
-  <script type="module" src="private_client.js"></script>
+    <br>
+
+    <b>System status: </b><br>
+    <div id="status" style="width:625px; height:75px; overflow-y:scroll;"></div>
+    <b>Chat Responses:</b><br>
+    <div id="responses"></div>
+
+    <br>
+
+    <h2>Online Users</h2>
+    <ul id="online-users-list"></ul>
+
+    <br>
+
+    <script type="module" src="client.js"></script>
+    <script type="module" src="private_client.js"></script>
 </body>
 
 </html>

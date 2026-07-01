@@ -4,10 +4,10 @@
  * ===============================================================================
  */
 var socket = io(); //connect to the Socket.io Server
-export {socket};
+export { socket };
 
 socket.on("connect", () => { //connected to the server
-  console.log(`Connected to Socket.io server: 
+    console.log(`Connected to Socket.io server: 
     ${socket.io.opts.hostname}, port: ${socket.io.opts.port}`);
 });
 
@@ -16,18 +16,18 @@ socket.on("connect", () => { //connected to the server
  */
 // UI DOM references
 var sendBtnElm = document.getElementById('send-button');
-if(!sendBtnElm) {
+if (!sendBtnElm) {
     console.log("Error in getting 'send-button' button");
 }
 // AC-01.2 (UI): Send button click triggers sendMessage()
 sendBtnElm.addEventListener('click', sendMessage);
 
 var chatMessageInput = document.getElementById('chat-message');
-if(!chatMessageInput) {
+if (!chatMessageInput) {
     console.log('Error in getting "chat-message" input');
 }
 // AC-01.2 (UI): pressing Enter also triggers sendMessage()
-chatMessageInput.addEventListener('keypress', function(e) {
+chatMessageInput.addEventListener('keypress', function (e) {
     socket.emit('typing');
     if (e.key === 'Enter') sendMessage();
 });
@@ -59,12 +59,12 @@ function displayMessage(data) {
 }
 
 // AC-02.1: display system status events (join/leave) in the status area
-socket.on('status', function(data) {
+socket.on('status', function (data) {
     var statusElm = document.getElementById('status');
     // AC-02.2: shows timestamp for each message
     var timestamp = new Date().toLocaleTimeString();
     statusElm.innerHTML = statusElm.innerHTML +
-    '<br>[' + timestamp + '] ' + DOMPurify.sanitize(data);
+        '<br>[' + timestamp + '] ' + DOMPurify.sanitize(data);
     // AC-02.3 (UI): auto-scroll to the latest message
     statusElm.scrollTop = statusElm.scrollHeight;
 });
@@ -74,14 +74,20 @@ socket.on('status', function(data) {
 // =============================================================================
 var myUsername = null;
 
-socket.on("username", (username)=> {
-    myUsername = username
+socket.on("username", ({ success, message }) => {
+    if (!success) {
+        alert(message);
+        return;
+    }
+    myUsername = message;
     var welcome = document.getElementById('welcome')
     welcome.innerHTML = "Welcome " + DOMPurify.sanitize(myUsername);
+    document.getElementById('loginUI').style.display = 'none';
+    document.getElementById('chatUI').style.display = '';
 })
 //AC-10.1: Online users are displayed in a list, styling will be added separately
 var onlineUserList = document.getElementById('online-users-list');
-socket.on('userlist', function(data) {
+socket.on('userlist', function (data) {
     onlineUserList.innerHTML = '';
     for (var i = 0; i < data.length; i++) {
         if (data[i] === myUsername) continue;
@@ -90,13 +96,26 @@ socket.on('userlist', function(data) {
         onlineUserList.appendChild(li);
     }
 });
+// =============================================================================
+// Use-Case-4: Login and create account
+// =============================================================================
+document.getElementById('joinBtn').addEventListener('click', joinChat);
+function joinChat() {
+    const username = document.getElementById('username').value;
+    const pattern = /^\w{3,20}$/;
+    if (!username || !pattern.test(username)) {
+        alert("Username cannot be empty and must be between 3-20 characters long!");
+        return;
+    }
+    socket.emit('username', username)
+};
 
 const typingUsers = new Set();
 const typingTimeouts = new Map();
 
 socket.on("typing", displayPrivateTyping);
 
-function displayPrivateTyping({username}) {
+function displayPrivateTyping({ username }) {
     typingUsers.add(username); //Add the user to a typing status
 
     // Reset this user's timeout
