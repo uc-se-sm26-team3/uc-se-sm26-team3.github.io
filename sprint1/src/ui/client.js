@@ -90,7 +90,7 @@ socket.on('userlist', function(data) {
     }
 });
 // =============================================================================
-// Use-Case-: Login
+// Use-Case-4: Login and create account
 // =============================================================================
 document.getElementById('joinBtn').addEventListener('click', joinChat);
 function joinChat() {
