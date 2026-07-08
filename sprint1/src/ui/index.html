@@ -14,63 +14,74 @@
 </head>
 
 <body>
-  <div id="loginUI">
-    <h1>Simple Messenger — V3.0</h1>
-    <h3>By Team 3 (Zach Fowler, Alex May, Divya Nandigala, Lincoln Warren, Molly Moser)</h3>
-    <br>
-    <input type="text" id="username" placeholder="Username" pattern="\w{3,20}" required
-      title="Username must be between 3-20 characters" />
+    <div id="loginUI">
+        <h1>Simple Messenger — V3.0</h1>
+        <h3>By Team 3 (Zach Fowler, Alex May, Divya Nandigala, Lincoln Warren, Molly Moser)</h3>
+        <br>
+        <input type="text" id="username" placeholder="Username" pattern="\w{3,20}" required
+        title="Username must be between 3-20 characters" />
 
-    <!-- <input type = "password" id="password" placeholder="Password" /> -->
-    <br>
-    <button class="button" id="joinBtn">Join Chat</button>
-  </div>
-
-  <div id="chatUI" style="display: none">
-    <h1>Simple Messenger — EECE/CS 3093C Lab 1</h1>
-
-    <br>
-
-    <b>
-      <div id="welcome"></div>
-    </b>
-
-    <br>
-
-    <div>
-      Chat message:
-      <input id="chat-message" type="text" autocomplete="off" placeholder="Type a message…" style="width:450px;" />
-      <button id="send-button">Send</button>
-      <div id="typing"></div>
+        <!-- <input type = "password" id="password" placeholder="Password" /> -->
+        <br>
+        <button class="button" id="joinBtn">Join Chat</button>
     </div>
 
-    <br>
+    <div id="chatUI" style="display: none">
+        <h1>Simple Messenger — EECE/CS 3093C Lab 1</h1>
 
-    <div>
-      Private message:
-      <input id="private-username" type="text" autocomplete="off" placeholder="Type a username…" style="width:150px;" />
-      <input id="private-message" type="text" autocomplete="off" placeholder="Type a private message…"
-        style="width:450px;" />
-      <button id="send-private-button">Send</button>
-      <div id="private-typing"></div>
+        <br>
+
+        <b>
+            <div id="welcome"></div>
+        </b>
+
+        <br>
+
+        <hr>
+
+        <div>
+            <h2>Chats</h2>
+            <ul id="online-users-list">
+                <li id="general-chat" data-chat="public">
+                    # General Chat
+                </li>
+                <!-- Users will be added here -->
+            </ul>
+        </div>
+
+        <hr>
+
+        <!-- Current Conversation -->
+        <div>
+            <h2 id="conversation-header">
+                # General Chat
+            </h2>
+            <div id="responses"></div>
+            <div id="typing"></div>
+        </div>
+
+        <hr>
+
+        <!-- Shared Message Input -->
+        <div>
+            <input
+                id="message-input"
+                type="text"
+                autocomplete="off"
+                placeholder="Type a message...">
+
+            <button id="send-button">
+                Send
+            </button>
+        </div>
+
+        <hr>
+
+        <b>System status: </b><br>
+        <div id="status" style="width:625px; height:75px; overflow-y:scroll;"></div>
     </div>
-
-    <br>
-
-    <b>System status: </b><br>
-    <div id="status" style="width:625px; height:75px; overflow-y:scroll;"></div>
-    <b>Chat Responses:</b><br>
-    <div id="responses"></div>
-
-    <br>
-
-    <h2>Online Users</h2>
-    <ul id="online-users-list"></ul>
-
-    <br>
 
     <script type="module" src="client.js"></script>
-    <script type="module" src="private_client.js"></script>
 </body>
 
 </html>
