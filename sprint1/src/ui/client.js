@@ -59,13 +59,7 @@ function displayMessage(data) {
 
 // AC-02.1: display system status events (join/leave) in the status area
 socket.on('status', function(data) {
-    var statusElm = document.getElementById('status');
-    // AC-02.2: shows timestamp for each message
-    var timestamp = new Date().toLocaleTimeString();
-    statusElm.innerHTML = statusElm.innerHTML +
-    '<br>[' + timestamp + '] ' + DOMPurify.sanitize(data);
-    // AC-02.3 (UI): auto-scroll to the latest message
-    statusElm.scrollTop = statusElm.scrollHeight;
+    displayMessage(data);
 });
 
 // =============================================================================
@@ -80,6 +74,7 @@ socket.on("username", (username)=> {
 })
 //AC-10.1: Online users are displayed in a list, styling will be added separately
 var onlineUserList = document.getElementById('online-users-list');
+var onlineUserCount = document.getElementById('online-users-count');
 socket.on('userlist', function(data) {
     onlineUserList.innerHTML = '';
     for (var i = 0; i < data.length; i++) {
@@ -87,6 +82,11 @@ socket.on('userlist', function(data) {
         var li = document.createElement('li');
         li.innerHTML = DOMPurify.sanitize(data[i]); //AC-10.3: Usernames are sanatized
         onlineUserList.appendChild(li);
+    }
+    if (data.length <= 1) {
+        onlineUserCount.textContent = data.length + " online user";
+    } else {
+        onlineUserCount.textContent = data.length + " online users";
     }
 });
 // =============================================================================
