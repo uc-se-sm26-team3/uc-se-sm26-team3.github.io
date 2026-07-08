@@ -42,8 +42,8 @@
 <div id="chatUI" style="display: none" class="chatUI">
 
   <div class = "titlecontainer">
-    <h1>Bubble</h1>
-    <h2>Simple Messenger — EECE/CS 3093C Lab 1</h2>
+
+    <h4><div id = "welcome"></div></b></h4>
 
     <div class="panel">
       <b>Online Users</b>
@@ -55,31 +55,28 @@
 
   <div class="container">
 
-    <br>
-    <h4><div id = "welcome"></div></b></h4>
+  <h1>Bubble</h1>
+  <h2>Simple Messenger — EECE/CS 3093C Lab 1</h2>
 
-    <div class="message-box">
-    Chat message:  
-    <input id="chat-message" type="text" autocomplete="off" placeholder="Type a message…" style="max-width:450px; width:100%;"/>  
-    <button id="send-button">Send</button>
-    </div>
-
-    <div class="message-box">
-    Private message:
-    <input id="private-username" type="text" autocomplete="off" placeholder="Type a username…" style="max-width:150px; width:100%;" />
-    <input id="private-message" type="text" autocomplete="off" placeholder="Type a private message…"
-      style="max-width:450px; width:100%;" />
-    <button id="send-private-button">Send</button>
-</div>
-
-
-
-  <b>Chat Responses:</b><br>
+  <b>Chat:</b><br>
   <div class="panel">
     <div id="responses"></div>
   </div>
   <br>
 
+  <div class="message-box">
+  Message:  
+  <input id="chat-message" type="text" autocomplete="off" placeholder="Type a message…" style="max-width:450px; width:100%;"/>  
+  <button id="send-button">Send</button>
+  </div>
+
+  <div class="message-box">
+  Private message:
+  <input id="private-username" type="text" autocomplete="off" placeholder="Type a username…" style="max-width:150px; width:100%;" />
+  <input id="private-message" type="text" autocomplete="off" placeholder="Type a private message…"
+    style="max-width:450px; width:100%;" />
+  <button id="send-private-button">Send</button>
+  </div>
 
 </div>
 
