@@ -6,82 +6,95 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Simple Messenger — EECE/CS 3093C Lab 1</title>
   <script src="/socket.io/socket.io.js"></script>
+  <link rel="stylesheet" href="style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.7/purify.min.js"
     integrity="sha512-78KH17QLT5e55GJqP76vutp1D2iAoy06WcYBXB6iBCsmO6wWzx0Qdg8EDpm8mKXv68BcvHOyeeP4wxAL0twJGQ=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://code.jquery.com/jquery-4.0.0.js" integrity="sha256-9fsHeVnKBvqh3FB2HYu7g2xseAZ5MlN6Kz/qnkASV8U="
-    crossorigin="anonymous"></script>
 </head>
 
 <body>
-    <div id="loginUI">
-        <h1>Simple Messenger — V3.0</h1>
-        <h3>By Team 3 (Zach Fowler, Alex May, Divya Nandigala, Lincoln Warren, Molly Moser)</h3>
-        <br>
-        <input type="text" id="username" placeholder="Username" pattern="\w{3,20}" required
+  <div id="loginUI">
+    <h1>Simple Messenger — V3.0</h1>
+    <h3>By Team 3 (Zach Fowler, Alex May, Divya Nandigala, Lincoln Warren, Molly Moser)</h3>
+    <div class="loginContainer">
+      <input type="text" id="username" placeholder="Username" pattern="\w{3,20}" required
         title="Username must be between 3-20 characters" />
 
-        <!-- <input type = "password" id="password" placeholder="Password" /> -->
-        <br>
-        <button class="button" id="joinBtn">Join Chat</button>
+      <input type="password" id="password" placeholder="Password" />
+      <br>
+      <button class="button" id="joinBtn">Join Chat</button>
     </div>
 
-    <div id="chatUI" style="display: none">
-        <h1>Simple Messenger — EECE/CS 3093C Lab 1</h1>
+    <div class="bubbles">
+      <!--- This is what adds our little bubbles to the background --->
+      <div class="bubble bubble-1"></div>
+      <div class="bubble bubble-2"></div>
+      <div class="bubble bubble-3"></div>
+      <div class="bubble bubble-4"></div>
+      <div class="bubble bubble-5"></div>
+      <div class="bubble bubble-6"></div>
+      <div class="bubble bubble-7"></div>
+      <div class="bubble bubble-8"></div>
+    </div>
+  </div>
 
-        <br>
+  <div id="chatUI" style="display: none" class="chatUI">
 
-        <b>
-            <div id="welcome"></div>
-        </b>
+    <div class="titlecontainer">
 
-        <br>
+      <h4>
+        <div id="welcome"></div>
+      </h4>
 
-        <hr>
+      <div class="panel">
+        <b>Online Users</b>
+        <p id="online-users-count">No one's online</p>
+        <ul id="online-users-list" style="width:100%; height:75px; overflow-y:scroll;">
+            <li id="general-chat" data-chat="public">
+              # General Chat
+            </li>
+            <!-- Users will be added here -->
+        </ul>
+        <script src="client.js"></script>
+      </div>
+    </div>
 
-        <div>
-            <h2>Chats</h2>
-            <ul id="online-users-list">
-                <li id="general-chat" data-chat="public">
-                    # General Chat
-                </li>
-                <!-- Users will be added here -->
-            </ul>
-        </div>
+    <div class="container">
+      <h1>Bubble</h1>
+      <h2>Simple Messenger — EECE/CS 3093C Lab 1</h2>
 
-        <hr>
+      <div class="panel" style="height:40px">
 
         <!-- Current Conversation -->
         <div>
-            <h2 id="conversation-header">
-                # General Chat
-            </h2>
-            <div id="responses"></div>
-            <div id="typing"></div>
+          <h2 id="conversation-header">
+            # General Chat
+          </h2>
+          <div id="responses"></div>
+          <div id="typing"></div>
         </div>
+      </div>
 
-        <hr>
+      <b>Chat:</b><br>
+      <div class="panel">
+        <div id="responses"></div>
+      </div>
+      <br>
 
+      <div class="message-box">
         <!-- Shared Message Input -->
         <div>
-            <input
-                id="message-input"
-                type="text"
-                autocomplete="off"
-                placeholder="Type a message...">
+          <input id="message-input" type="text" autocomplete="off" placeholder="Type a message...">
 
-            <button id="send-button">
-                Send
-            </button>
+          <button id="send-button">
+            Send
+          </button>
         </div>
+      </div>
 
-        <hr>
-
-        <b>System status: </b><br>
-        <div id="status" style="width:625px; height:75px; overflow-y:scroll;"></div>
     </div>
-
-    <script type="module" src="client.js"></script>
+  </div>
+  <script type="module" src="client.js"></script>
 </body>
 
 </html>

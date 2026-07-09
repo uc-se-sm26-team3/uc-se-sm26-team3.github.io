@@ -229,6 +229,11 @@ socket.on('userlist', function(data) {
         });
         onlineUserList.appendChild(li);
     }
+    if (data.length <= 1) {
+        onlineUserCount.textContent = data.length + " online user";
+    } else {
+        onlineUserCount.textContent = data.length + " online users";
+    }
 });
 
 // =============================================================================
@@ -243,12 +248,10 @@ function joinChat() {
         alert("Username cannot be empty and must be between 3-20 characters long!");
         return;
     }
-    socket.emit('username', username);
-}
-
-// =============================================================================
-// Typing Indicators
-// =============================================================================
+    document.getElementById('loginUI').style.display = 'none';
+    document.getElementById('chatUI').style.display = '';
+    socket.emit('username', username)
+};
 
 const typingUsers = new Set();
 const typingTimeouts = new Map();
