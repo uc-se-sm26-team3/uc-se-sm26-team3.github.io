@@ -67,6 +67,16 @@ function loadConversation() {
     conversations[chatKey].forEach(function(message) {
         responses.appendChild(message);
     });
+
+    if (selectedUser) {
+        var notification = document.querySelector(`[data-username="${DOMPurify.sanitize(selectedUser)}"]`);
+        if (notification) {
+            var redDot = notification.querySelector('.red-dot');
+            if (redDot) {
+                redDot.remove();
+            }
+        }
+    }
 }
 
 // =============================================================================
@@ -142,8 +152,22 @@ socket.on('private-message', ({ sender, recipient, message }) => {
     conversations[conversation].push(d);
     if (selectedUser === conversation) {
         loadConversation();
+    } else {
+        addNotification(conversation);
     }
 });
+
+var unreadChats = {};
+function addNotification(username) {
+    unreadChats[username] = true;
+    var notification = document.querySelector(`[data-username="${DOMPurify.sanitize(username)}"]`);
+    if (!notification) return;
+    var redDot = notification.querySelector('.red-dot');
+    if (redDot) return;
+    redDot = document.createElement("span");
+    redDot.classList.add("red-dot");
+    notification.insertAdjacentElement("afterbegin", redDot);
+}
 
 // =============================================================================
 // System Status
@@ -187,6 +211,7 @@ socket.on('userlist', function(data) {
         
         if (!data.includes(chat)) {
             delete conversations[chat];
+            delete unreadChats[chat];
 
             // If the user we were chatting with left, return to General Chat
             if (selectedUser === chat) {
@@ -223,6 +248,9 @@ socket.on('userlist', function(data) {
             loadConversation();
         });
         onlineUserList.appendChild(li);
+        if (unreadChats[data[i]]) {
+            addNotification(data[i]);
+        }
     }
     if (data.length <= 1) {
         onlineUserCount.textContent = data.length + " online user";
