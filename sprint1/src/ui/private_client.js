@@ -1,4 +1,4 @@
-import { socket } from "./client.js";
+import {socket} from "./client.js";
 
 // UI DOM references
 var privateButton = document.getElementById('send-private-button');
