@@ -25,6 +25,8 @@ body {
     display: flex;
     align-items: flex-start;
     gap: 1%;
+    width: 94vw;
+    margin-top: 2%;
 }
 
 .container{
