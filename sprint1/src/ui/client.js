@@ -11,7 +11,6 @@ socket.on("connect", () => { //connected to the server
     console.log(`Connected to Socket.io server: 
     ${socket.io.opts.hostname}, port: ${socket.io.opts.port}`);
 });
-socket.emit('message', 'I am an unauthenticated attacker');
 
 
 // =============================================================================
