@@ -242,8 +242,6 @@ function joinChat() {
         alert("Username cannot be empty and must be between 3-20 characters long!");
         return;
     }
-    document.getElementById('loginUI').style.display = 'none';
-    document.getElementById('chatUI').style.display = '';
     socket.emit('username', username)
 };
 
