@@ -25,4 +25,10 @@ function sendMessage() {
     // other AC will be implemented
     chatMessageInput.value = ''; // AC-01.5: clear input after sending
     chatMessageInput.focus();
+
+    const list = document.getElementById('chat');
+    const newItem = document.createElement("li")
+    newItem.textContent=message;
+    list.append(newItem);
+
 }
