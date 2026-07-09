@@ -10,9 +10,9 @@
   "license": "ISC",
   "author": "Lincoln Warren, Zach Fowler, Divya Nandigala, Molly Moser, Alex May",
   "type": "commonjs",
-  "main": "src/index.js",
+  "main": "sprint1/src/index.js",
   "scripts": {
-    "start": "node src/server.js"
+    "start": "node sprint1/src/server.js"
   },
   "dependencies": {
     "express": "^5.2.1",
