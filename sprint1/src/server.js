@@ -14,7 +14,7 @@ app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
     "default-src 'self'; \
-    script-src 'self' https://cdnjs.cloudflare.com; \
+    script-src 'self' https://cdnjs.cloudflare.com https://code.jquery.com; \
     style-src 'self' 'unsafe-inline'; \
     connect-src 'self' https://cdnjs.cloudflare.com"
   );
@@ -30,16 +30,33 @@ const userlist = new Map();
 
 io.on('connection', (socket) => {
 
-  // Auto-assign a unique username from the socket ID
-  const username = 'User_' + socket.id.slice(-5);
-  socket.emit('username', username) //Send the user their assigned username
-  userlist.set(socket.id, username);
-  console.log('New client connected - socket ID: ' + socket.id)
+  socket.on("username", (username) => {
+    // Auto-assign a unique username from the socket ID
+    const pattern = /^\w{3,20}$/;
+    if (!username || !pattern.test(username)) {
+      socket.emit("username", { success: false, message: "Username too short!" });
+      return;
+    }
 
-  //UC-02 (AC-02.1): notify all connected clients that a new user joined
-  io.emit('status', username +
-    ' joined the chat. Number of connected clients: ' + userlist.size);
-  io.emit('userlist', Array.from(userlist.values())); //Send the user the list of online users
+    // Compare usernames case-insensitively
+    const normalized = username.toLowerCase();
+    const taken = [...userlist.values()]
+      .some(name => name.toLowerCase() === normalized);
+    if (taken) {
+      socket.emit("username", { success: false, message: "Username already taken!" });
+      return;
+    }
+
+    socket.emit('username', { success: true, message: username }) //Send the user their assigned username
+    userlist.set(socket.id, username);
+    console.log('New client connected - socket ID: ' + socket.id)
+    socket.join("logged-in");
+
+    //UC-02 (AC-02.1): notify all connected clients that a new user joined
+    io.to("logged-in").emit('status', username +
+      ' joined the chat. Number of connected clients: ' + userlist.size);
+    io.to("logged-in").emit('userlist', Array.from(userlist.values())); //Send the user the list of online users
+  });
 
   // ---------------------------------------------------------------------------
   // Use-Case-01: Send message
@@ -52,12 +69,14 @@ io.on('connection', (socket) => {
   // AC-01.5: input is cleared after sending (enforced client-side)
   // ---------------------------------------------------------------------------
   socket.on('message', (data) => {
+    const sender = userlist.get(socket.id);
+    if (!sender) return; // User hasn't logged in yet
+
     // AC-01.2: ignore empty messages
     if (!data || data.trim() === '') return;
     // AC-01.3 + AC-01.4: broadcast to all clients with sender username
-    const sender = userlist.get(socket.id);
     console.log(`Debug> "${sender}" sent: ${data}`);
-    io.emit('message', sender + ' says: ' + data.trim());
+    io.to("logged-in").emit('message', sender + ' says: ' + data.trim());
   });
 
   // ---------------------------------------------------------------------------
@@ -67,11 +86,96 @@ io.on('connection', (socket) => {
   // ---------------------------------------------------------------------------
   socket.on('disconnect', () => {
     const username = userlist.get(socket.id);
+    if (!username) return;
     userlist.delete(socket.id);
     console.log('Client disconnected - socket ID: ' + socket.id);
-    io.emit('status', username +
+    io.to("logged-in").emit('status', username +
       ' left the chat. Number of connected clients: ' + userlist.size);
-    io.emit('userlist', Array.from(userlist.values())); //Send new user list to all users
+    io.to("logged-in").emit('userlist', Array.from(userlist.values())); //Send new user list to all users
+    socket.leave("logged-in");
+  });
+
+  // Private messages
+  socket.on('private-message', ({ username: username, message: message }) => {
+    // AC-01.2: ignore empty messages
+    if (!message || message.trim() === '') return;
+    if (!username || username.trim() === '') return;
+    // AC-01.3 + AC-01.4: broadcast to all clients with sender username
+    const sender = userlist.get(socket.id);
+
+    // Find recipient socket ID
+    const recipientId = [...userlist.entries()]
+      .find(([id, name]) => name === username)?.[0];
+
+    if (!recipientId) {
+      console.log(`User "${username}" not found.`);
+      return;
+    }
+
+    console.log(`Debug> "${sender}" sent to ${username}: ${message}`);
+
+    let data = {
+      username: sender,
+      message: sender + ' says: ' + message.trim()
+    }
+
+    // Send to both the recipient and sender
+    io.to(recipientId).emit('private-message', data);
+    io.to(socket.id).emit('private-message', data);
+  });
+
+  // Private messages
+  socket.on('private-message', ({ username: username, message: message }) => {
+    // AC-01.2: ignore empty messages
+    if (!message || message.trim() === '') return;
+    if (!username || username.trim() === '') return;
+    // AC-01.3 + AC-01.4: broadcast to all clients with sender username
+    const sender = userlist.get(socket.id);
+
+    // Find recipient socket ID
+    const recipientId = [...userlist.entries()]
+      .find(([id, name]) => name === username)?.[0];
+
+    if (!recipientId) {
+      console.log(`User "${username}" not found.`);
+      return;
+    }
+
+    console.log(`Debug> "${sender}" sent to ${username}: ${message}`);
+
+    let data = {
+      username: sender,
+      message: sender + ' says: ' + message.trim()
+    }
+
+    // Send to both the recipient and sender
+    io.to(recipientId).emit('private-message', data);
+    io.to(socket.id).emit('private-message', data);
+  });
+
+  socket.on('typing', () => {
+    const sender = userlist.get(socket.id);
+    data = {
+      username: sender
+    };
+    socket.broadcast.emit('typing', data);
+  });
+
+  socket.on('private-typing', (username) => {
+    if (!username || username.trim() === '') return;
+    const sender = userlist.get(socket.id);
+
+    // Find recipient socket ID
+    const recipientId = [...userlist.entries()]
+      .find(([id, name]) => name === username)?.[0];
+
+    if (!recipientId) return; //Nobody to send typing indicator to
+
+    let data = {
+      username: sender
+    }
+
+    io.to(recipientId).emit('private-typing', data);
   });
 
   // Private messages

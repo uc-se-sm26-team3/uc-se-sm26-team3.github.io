@@ -4,10 +4,10 @@
  * ===============================================================================
  */
 var socket = io(); //connect to the Socket.io Server
-export {socket};
+export { socket };
 
 socket.on("connect", () => { //connected to the server
-  console.log(`Connected to Socket.io server: 
+    console.log(`Connected to Socket.io server: 
     ${socket.io.opts.hostname}, port: ${socket.io.opts.port}`);
 });
 
@@ -16,19 +16,20 @@ socket.on("connect", () => { //connected to the server
  */
 // UI DOM references
 var sendBtnElm = document.getElementById('send-button');
-if(!sendBtnElm) {
+if (!sendBtnElm) {
     console.log("Error in getting 'send-button' button");
 }
 // AC-01.2 (UI): Send button click triggers sendMessage()
 sendBtnElm.addEventListener('click', sendMessage);
 
 var chatMessageInput = document.getElementById('chat-message');
-if(!chatMessageInput) {
+if (!chatMessageInput) {
     console.log('Error in getting "chat-message" input');
 }
 // AC-01.2 (UI): pressing Enter also triggers sendMessage()
-chatMessageInput.addEventListener('keypress', function(e) {
-  if (e.key === 'Enter') sendMessage();
+chatMessageInput.addEventListener('keypress', function (e) {
+    socket.emit('typing');
+    if (e.key === 'Enter') sendMessage();
 });
 
 // =============================================================================
@@ -58,8 +59,14 @@ function displayMessage(data) {
 }
 
 // AC-02.1: display system status events (join/leave) in the status area
-socket.on('status', function(data) {
-    displayMessage(data);
+socket.on('status', function (data) {
+    var statusElm = document.getElementById('status');
+    // AC-02.2: shows timestamp for each message
+    var timestamp = new Date().toLocaleTimeString();
+    statusElm.innerHTML = statusElm.innerHTML +
+        '<br>[' + timestamp + '] ' + DOMPurify.sanitize(data);
+    // AC-02.3 (UI): auto-scroll to the latest message
+    statusElm.scrollTop = statusElm.scrollHeight;
 });
 
 // =============================================================================
@@ -67,15 +74,20 @@ socket.on('status', function(data) {
 // =============================================================================
 var myUsername = null;
 
-socket.on("username", (username)=> {
-    myUsername = username
+socket.on("username", ({ success, message }) => {
+    if (!success) {
+        alert(message);
+        return;
+    }
+    myUsername = message;
     var welcome = document.getElementById('welcome')
     welcome.innerHTML = "Welcome " + DOMPurify.sanitize(myUsername);
+    document.getElementById('loginUI').style.display = 'none';
+    document.getElementById('chatUI').style.display = '';
 })
 //AC-10.1: Online users are displayed in a list, styling will be added separately
 var onlineUserList = document.getElementById('online-users-list');
-var onlineUserCount = document.getElementById('online-users-count');
-socket.on('userlist', function(data) {
+socket.on('userlist', function (data) {
     onlineUserList.innerHTML = '';
     for (var i = 0; i < data.length; i++) {
         if (data[i] === myUsername) continue;
@@ -102,4 +114,61 @@ function joinChat() {
     }
     document.getElementById('loginUI').style.display = 'none';
     document.getElementById('chatUI').style.display = '';
+    socket.emit('username', username)
 };
+
+const typingUsers = new Set();
+const typingTimeouts = new Map();
+
+socket.on("typing", displayPrivateTyping);
+
+function displayPrivateTyping({ username }) {
+    typingUsers.add(username); //Add the user to a typing status
+
+    // Reset this user's timeout
+    if (typingTimeouts.has(username)) {
+        clearTimeout(typingTimeouts.get(username));
+    }
+
+    // Set a new timeout to delete the user from the typing status
+    typingTimeouts.set(username, setTimeout(() => {
+        typingUsers.delete(username);
+        typingTimeouts.delete(username);
+        updateTypingDisplay();
+    }, 1000));
+
+    updateTypingDisplay();
+}
+
+function updateTypingDisplay() {
+    const $typing = $("#typing");
+
+    // Remove the typing status element if there is nobody typing
+    if (typingUsers.size === 0) {
+        $typing.hide().text("");
+        return;
+    }
+
+    const users = [...typingUsers];
+    console.log(users)
+
+    let message;
+
+    switch (users.length) {
+        case 1:
+            message = `${users[0]} is typing...`;
+            break;
+        case 2:
+            message = `${users[0]} and ${users[1]} are typing...`;
+            break;
+        case 3:
+            message = `${users[0]}, ${users[1]}, and ${users[2]} are typing...`;
+            break;
+        default:
+            message = `${users[0]}, ${users[1]}, and ${users.length - 2} others are typing...`;
+    }
+
+    $typing
+        .show()
+        .text(DOMPurify.sanitize(message));
+}
