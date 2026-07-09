@@ -1,0 +1,21 @@
+{
+  "name": "uc-se-sm26-team3-sprint1",
+  "version": "1.0.0",
+  "description": "First working prototype of messenger app",
+  "keywords": [
+    "Node.js",
+    "Express",
+    "socket.io"
+  ],
+  "license": "ISC",
+  "author": "Lincoln Warren, Zach Fowler, Divya Nandigala, Molly Moser, Alex May",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3"
+  }
+}

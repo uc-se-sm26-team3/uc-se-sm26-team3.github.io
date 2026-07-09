@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simple Messenger — EECE/CS 3093C Lab 1</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.7/purify.min.js"
+  integrity="sha512-78KH17QLT5e55GJqP76vutp1D2iAoy06WcYBXB6iBCsmO6wWzx0Qdg8EDpm8mKXv68BcvHOyeeP4wxAL0twJGQ=="
+  crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<body>
+  <div class="bubbles">
+<! ---This is what adds our little bubbles to the background --->
+    <div class="bubble bubble-1"></div>
+    <div class="bubble bubble-2"></div>
+    <div class="bubble bubble-3"></div>
+    <div class="bubble bubble-4"></div>
+    <div class="bubble bubble-5"></div>
+    <div class="bubble bubble-6"></div>
+    <div class="bubble bubble-7"></div>
+    <div class="bubble bubble-8"></div>
+
+</div>
+
+  <div id="loginUI">
+      <h1>Simple Messenger — V3.0</h1>
+      <h3>By Team 3 (Zach Fowler, Alex May, Divya Nandigala, Lincoln Warren, Molly Moser)</h3>
+      <div class="loginContainer">
+      <input type = "text" id="username" placeholder="Username" 
+      pattern="\w{3,20}" required
+      title="Username must be between 3-20 characters"/>
+      
+      <input type = "password" id="password" placeholder="Password" />
+      <button class="button" id="joinBtn">Join Chat</button> 
+      </div>
+  </div>
+
+<div id="chatUI" style="display: none" class="chatUI">
+
+  <div class = "titlecontainer">
+
+    <h4><div id = "welcome"></div></b></h4>
+
+    <div class="panel">
+      <b>Online Users</b>
+      <p id="online-users-count">No one's online</p>
+      <ul id="online-users-list" style="width:100%; height:75px; overflow-y:scroll;"></ul>
+      <script src="client.js"></script>
+    </div>
+  </div>
+
+  <div class="container">
+
+  <h1>Bubble</h1>
+  <h2>Simple Messenger — EECE/CS 3093C Lab 1</h2>
+
+  <b>Chat:</b><br>
+  <div class="panel">
+    <div id="responses"></div>
+  </div>
+  <br>
+
+  <div class="message-box">
+  Message:  
+  <input id="chat-message" type="text" autocomplete="off" placeholder="Type a message…" style="max-width:450px; width:100%;"/>  
+  <button id="send-button">Send</button>
+  </div>
+
+  <div class="message-box">
+  Private message:
+  <input id="private-username" type="text" autocomplete="off" placeholder="Type a username…" style="max-width:150px; width:100%;" />
+  <input id="private-message" type="text" autocomplete="off" placeholder="Type a private message…"
+    style="max-width:450px; width:100%;" />
+  <button id="send-private-button">Send</button>
+  </div>
+
+</div>
+
+<script src="client.js"></script>
+    <script type="module" src="client.js"></script>
+    <script type="module" src="private_client.js"></script>
+  </div>
+</body>
+
+</html>
