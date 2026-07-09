@@ -1,8 +1,9 @@
 /* =============================================================================
  * EECE/CS 3093C Software Engineering
- * client.js — code skeleton provided by Dr. Phu Phung
- * ===============================================================================
+ * client.js — combined public/private chat client
+ * =============================================================================
  */
+
 var socket = io(); //connect to the Socket.io Server
 export { socket };
 
@@ -10,43 +11,97 @@ socket.on("connect", () => { //connected to the server
     console.log(`Connected to Socket.io server: 
     ${socket.io.opts.hostname}, port: ${socket.io.opts.port}`);
 });
+socket.emit('message', 'I am an unauthenticated attacker');
 
-/**
- * code blocks below have been implemented in Lecture 8
- */
+
+// =============================================================================
 // UI DOM references
+// =============================================================================
+
 var sendBtnElm = document.getElementById('send-button');
+
 if (!sendBtnElm) {
     console.log("Error in getting 'send-button' button");
 }
 // AC-01.2 (UI): Send button click triggers sendMessage()
 sendBtnElm.addEventListener('click', sendMessage);
 
-var chatMessageInput = document.getElementById('chat-message');
+
+var chatMessageInput = document.getElementById('message-input');
+
 if (!chatMessageInput) {
-    console.log('Error in getting "chat-message" input');
+    console.log('Error in getting "message-input" input');
 }
+
 // AC-01.2 (UI): pressing Enter also triggers sendMessage()
 chatMessageInput.addEventListener('keypress', function (e) {
-    socket.emit('typing');
     if (e.key === 'Enter') sendMessage();
+    else if (selectedUser) socket.emit('private-typing', selectedUser);
+    else socket.emit('typing');
 });
+
+// =============================================================================
+// Conversation State
+// =============================================================================
+
+var selectedUser = null;
+
+// Stores messages separately
+var conversations = {
+    public: []
+};
+
+// =============================================================================
+// Load Selected Conversation
+// =============================================================================
+
+function loadConversation() {
+    var responses = document.getElementById('responses');
+    responses.innerHTML = '';
+    var chatKey = selectedUser ? selectedUser : "public";
+
+    if (!conversations[chatKey]) {
+        conversations[chatKey] = [];
+    }
+
+    conversations[chatKey].forEach(function(message) {
+        responses.appendChild(message);
+    });
+}
 
 // =============================================================================
 // Use-Case-01: Send Message
 // =============================================================================
 
 function sendMessage() {
+
     var message = chatMessageInput.value.trim();
+
     if (!message) return;   // AC-02.2: empty messages are ignored
-    console.log(`Debug>Chat message: ${message}`); //for UI testing only
-    socket.emit('message', message) // AC-01.3: when non-empty message is sent
+
+    if (selectedUser) {
+        // AC-01.3: when non-empty message is sent
+        socket.emit('private-message', {
+            username: selectedUser,
+            message: message
+        });
+        loadConversation();
+    }
+    else {
+        socket.emit('message', message); // AC-01.3: when non-empty message is sent
+    }
+
     chatMessageInput.value = ''; // AC-01.5: clear input after sending
     chatMessageInput.focus();
 }
 
+
 // =============================================================================
 // Use-Case-02: Receive message 
+// =============================================================================
+
+// =============================================================================
+// Receive Public Messages
 // =============================================================================
 
 socket.on('message', displayMessage);
@@ -55,11 +110,46 @@ function displayMessage(data) {
     // AC-02.2: shows timestamp for each message
     var timestamp = new Date().toLocaleTimeString();
     d.innerHTML = '[' + timestamp + '] ' + DOMPurify.sanitize(data); //AC-02.5: Messages are sanatized
-    document.getElementById('responses').appendChild(d);
+    conversations.public.push(d);
+    if (!selectedUser) {
+        loadConversation();
+    }
 }
 
+// =============================================================================
+// Receive Private Messages
+// =============================================================================
+
+socket.on('private-message', ({ sender, recipient, message }) => {
+
+    // Determine which conversation this belongs to
+    let conversation;
+    if (sender === myUsername) {
+        // I sent the message, so store it under the recipient
+        conversation = recipient;
+    } else {
+        // Someone sent it to me, so store it under the sender
+        conversation = sender;
+    }
+
+    if (!conversations[conversation]) {
+        conversations[conversation] = [];
+    }
+
+    var d = document.createElement('div');
+    var timestamp = new Date().toLocaleTimeString();
+    d.innerHTML = '[' + timestamp + '] ' + '<i style="color:red">(PRIVATE)</i> ' + DOMPurify.sanitize(message);
+    conversations[conversation].push(d);
+    if (selectedUser === conversation) {
+        loadConversation();
+    }
+});
+
+// =============================================================================
+// System Status
+// =============================================================================
 // AC-02.1: display system status events (join/leave) in the status area
-socket.on('status', function (data) {
+socket.on('status', function(data) {
     var statusElm = document.getElementById('status');
     // AC-02.2: shows timestamp for each message
     var timestamp = new Date().toLocaleTimeString();
@@ -70,8 +160,9 @@ socket.on('status', function (data) {
 });
 
 // =============================================================================
-// Use-Case-10: View Online Users
+// Login
 // =============================================================================
+
 var myUsername = null;
 
 socket.on("username", ({ success, message }) => {
@@ -84,15 +175,58 @@ socket.on("username", ({ success, message }) => {
     welcome.innerHTML = "Welcome " + DOMPurify.sanitize(myUsername);
     document.getElementById('loginUI').style.display = 'none';
     document.getElementById('chatUI').style.display = '';
-})
+});
+
+// =============================================================================
+// Use-Case-10: View Online Users
+// =============================================================================
+
 //AC-10.1: Online users are displayed in a list, styling will be added separately
 var onlineUserList = document.getElementById('online-users-list');
-socket.on('userlist', function (data) {
+socket.on('userlist', function(data) {
     onlineUserList.innerHTML = '';
+
+    // Remove private chat history for users who are no longer online
+    Object.keys(conversations).forEach(function (chat) {
+        if (chat === "public") return;
+        
+        if (!data.includes(chat)) {
+            delete conversations[chat];
+
+            // If the user we were chatting with left, return to General Chat
+            if (selectedUser === chat) {
+                selectedUser = null;
+                document.getElementById('conversation-header').textContent = "# General Chat";
+                loadConversation();
+            }
+        }
+    });
+    
+    // General Chat
+    var general = document.createElement('li');
+    general.id = "general-chat";
+    general.textContent = "# General Chat";
+    general.addEventListener('click', function() {
+        selectedUser = null;
+        document.getElementById('conversation-header').textContent =
+            "# General Chat";
+        loadConversation();
+    });
+    onlineUserList.appendChild(general);
+
     for (var i = 0; i < data.length; i++) {
         if (data[i] === myUsername) continue;
         var li = document.createElement('li');
-        li.innerHTML = DOMPurify.sanitize(data[i]); //AC-10.3: Usernames are sanatized
+        li.textContent = DOMPurify.sanitize(data[i]);
+        li.dataset.username = data[i];
+        li.addEventListener('click', function() {
+            selectedUser = this.dataset.username;
+            if (!conversations[selectedUser]) {
+                conversations[selectedUser] = [];
+            }
+            document.getElementById('conversation-header').textContent = selectedUser;
+            loadConversation();
+        });
         onlineUserList.appendChild(li);
     }
     if (data.length <= 1) {
@@ -101,9 +235,11 @@ socket.on('userlist', function (data) {
         onlineUserCount.textContent = data.length + " online users";
     }
 });
+
 // =============================================================================
 // Use-Case-4: Login and create account
 // =============================================================================
+
 document.getElementById('joinBtn').addEventListener('click', joinChat);
 function joinChat() {
     const username = document.getElementById('username').value;
@@ -120,9 +256,10 @@ function joinChat() {
 const typingUsers = new Set();
 const typingTimeouts = new Map();
 
-socket.on("typing", displayPrivateTyping);
+socket.on("typing", displayTyping);
+socket.on("private-typing", displayTyping);
 
-function displayPrivateTyping({ username }) {
+function displayTyping({ username }) {
     typingUsers.add(username); //Add the user to a typing status
 
     // Reset this user's timeout
@@ -132,9 +269,9 @@ function displayPrivateTyping({ username }) {
 
     // Set a new timeout to delete the user from the typing status
     typingTimeouts.set(username, setTimeout(() => {
-        typingUsers.delete(username);
-        typingTimeouts.delete(username);
-        updateTypingDisplay();
+            typingUsers.delete(username);
+            typingTimeouts.delete(username);
+            updateTypingDisplay();
     }, 1000));
 
     updateTypingDisplay();
@@ -154,18 +291,11 @@ function updateTypingDisplay() {
 
     let message;
 
-    switch (users.length) {
-        case 1:
-            message = `${users[0]} is typing...`;
-            break;
-        case 2:
-            message = `${users[0]} and ${users[1]} are typing...`;
-            break;
-        case 3:
-            message = `${users[0]}, ${users[1]}, and ${users[2]} are typing...`;
-            break;
-        default:
-            message = `${users[0]}, ${users[1]}, and ${users.length - 2} others are typing...`;
+    if (users.length === 1) {
+        message = `${users[0]} is typing...`;
+    }
+    else {
+        message = `${users.join(", ")} are typing...`;
     }
 
     $typing
