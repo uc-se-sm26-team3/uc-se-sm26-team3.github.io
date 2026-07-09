@@ -109,7 +109,7 @@ function displayMessage(data) {
     var d = document.createElement('div');
     // AC-02.2: shows timestamp for each message
     var timestamp = new Date().toLocaleTimeString();
-    d.innerHTML = '[' + timestamp + '] ' + DOMPurify.sanitize(data); //AC-02.5: Messages are sanatized
+    d.innerHTML = '<i style="color:grey">[' + timestamp + ']</i> ' + DOMPurify.sanitize(data); //AC-02.5: Messages are sanatized
     conversations.public.push(d);
     if (!selectedUser) {
         loadConversation();
@@ -138,7 +138,7 @@ socket.on('private-message', ({ sender, recipient, message }) => {
 
     var d = document.createElement('div');
     var timestamp = new Date().toLocaleTimeString();
-    d.innerHTML = '[' + timestamp + '] ' + '<i style="color:red">(PRIVATE)</i> ' + DOMPurify.sanitize(message);
+    d.innerHTML = '<i style="color:grey">[' + timestamp + ']</i> ' + DOMPurify.sanitize(message);
     conversations[conversation].push(d);
     if (selectedUser === conversation) {
         loadConversation();

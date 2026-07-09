@@ -53,8 +53,8 @@ io.on('connection', (socket) => {
     socket.join("logged-in");
 
     //UC-02 (AC-02.1): notify all connected clients that a new user joined
-    io.to("logged-in").emit('status', username +
-      ' joined the chat. Number of connected clients: ' + userlist.size);
+    io.to("logged-in").emit('status','<i style="color:grey">'+ username +
+      ' joined the chat.</i> ');
     io.to("logged-in").emit('userlist', Array.from(userlist.values())); //Send the user the list of online users
   });
 
@@ -68,15 +68,28 @@ io.on('connection', (socket) => {
   // AC-01.4: the broadcast payload includes the sender's username and the text
   // AC-01.5: input is cleared after sending (enforced client-side)
   // ---------------------------------------------------------------------------
+
   socket.on('message', (data) => {
     const sender = userlist.get(socket.id);
     if (!sender) return; // User hasn't logged in yet
 
     // AC-01.2: ignore empty messages
     if (!data || data.trim() === '') return;
-    // AC-01.3 + AC-01.4: broadcast to all clients with sender username
+    // AC-01.3 + AC-01.4: broadcast to all clients with sender username -> public chat
     console.log(`Debug> "${sender}" sent: ${data}`);
-    io.to("logged-in").emit('message', sender + ' says: ' + data.trim());
+    for (const [id, username] of userlist.entries()) {
+        if (username === sender) {
+            io.to(id).emit(
+                "message",
+                `<i style="color:green">You said:</i> ${data.trim()}`
+            );
+        } else {
+            io.to(id).emit(
+                "message",
+                `<i style="color:blue">${sender} said:</i> ${data.trim()}`
+            );
+        }
+    }
   });
 
   // ---------------------------------------------------------------------------
@@ -89,8 +102,8 @@ io.on('connection', (socket) => {
     if (!username) return;
     userlist.delete(socket.id);
     console.log('Client disconnected - socket ID: ' + socket.id);
-    io.to("logged-in").emit('status', username +
-      ' left the chat. Number of connected clients: ' + userlist.size);
+    io.to("logged-in").emit('status', '<i style="color:grey">' + username +
+      ' left the chat.</i>');
     io.to("logged-in").emit('userlist', Array.from(userlist.values())); //Send new user list to all users
     socket.leave("logged-in");
   });
@@ -114,15 +127,21 @@ io.on('connection', (socket) => {
 
     console.log(`Debug> "${sender}" sent to ${username}: ${message}`);
 
-    let data = {
+    // This is the private chat
+    let dataSender = {
       sender: sender,
       recipient: username,
-      message: sender + ' says: ' + message.trim()
+      message: '<i style="color:green"> You said: </i>' + message.trim()
+    }
+    let dataRecipient = {
+      sender: sender,
+      recipient: username,
+      message: '<i style="color:blue">'+ sender + ' says: </i>' + message.trim()
     }
 
     // Send to both the recipient and sender
-    io.to(recipientId).emit('private-message', data);
-    io.to(socket.id).emit('private-message', data);
+    io.to(recipientId).emit('private-message', dataRecipient);
+    io.to(socket.id).emit('private-message', dataSender);
   });
 
   socket.on('typing', () => {
@@ -148,34 +167,5 @@ io.on('connection', (socket) => {
     }
 
     io.to(recipientId).emit('private-typing', data);
-  });
-
-  // Private messages
-  socket.on('private-message', ({ username: username, message: message }) => {
-    // AC-01.2: ignore empty messages
-    if (!message || message.trim() === '') return;
-    if (!username || username.trim() === '') return;
-    // AC-01.3 + AC-01.4: broadcast to all clients with sender username
-    const sender = userlist.get(socket.id);
-
-    // Find recipient socket ID
-    const recipientId = [...userlist.entries()]
-      .find(([id, name]) => name === username)?.[0];
-
-    if (!recipientId) {
-      console.log(`User "${username}" not found.`);
-      return;
-    }
-
-    console.log(`Debug> "${sender}" sent to ${username}: ${message}`);
-
-    let data = {
-      username: sender,
-      message: sender + ' says: ' + message.trim()
-    }
-
-    // Send to both the recipient and sender
-    io.to(recipientId).emit('private-message', data);
-    io.to(socket.id).emit('private-message', data);
   });
 });
