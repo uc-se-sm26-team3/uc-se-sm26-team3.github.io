@@ -151,21 +151,4 @@ io.on('connection', (socket) => {
     };
     socket.broadcast.emit('typing', data);
   });
-
-  socket.on('private-typing', (username) => {
-    if (!username || username.trim() === '') return;
-    const sender = userlist.get(socket.id);
-
-    // Find recipient socket ID
-    const recipientId = [...userlist.entries()]
-      .find(([id, name]) => name === username)?.[0];
-
-    if (!recipientId) return; //Nobody to send typing indicator to
-
-    let data = {
-      username: sender
-    }
-
-    io.to(recipientId).emit('private-typing', data);
-  });
 });

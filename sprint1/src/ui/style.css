@@ -89,6 +89,15 @@ body {
 
 }
 
+.typing{
+    display: flex;
+
+    color:#777;
+
+    width:100%;
+    height:100%;
+}
+
 input{
 
     flex:1;

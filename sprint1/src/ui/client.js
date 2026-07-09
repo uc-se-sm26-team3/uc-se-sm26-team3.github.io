@@ -35,7 +35,6 @@ if (!chatMessageInput) {
 // AC-01.2 (UI): pressing Enter also triggers sendMessage()
 chatMessageInput.addEventListener('keypress', function (e) {
     if (e.key === 'Enter') sendMessage();
-    else if (selectedUser) socket.emit('private-typing', selectedUser);
     else socket.emit('typing');
 });
 
@@ -277,7 +276,6 @@ const typingUsers = new Set();
 const typingTimeouts = new Map();
 
 socket.on("typing", displayTyping);
-socket.on("private-typing", displayTyping);
 
 function displayTyping({ username }) {
     typingUsers.add(username); //Add the user to a typing status
