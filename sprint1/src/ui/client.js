@@ -25,6 +25,18 @@ if (!sendBtnElm) {
 // AC-01.2 (UI): Send button click triggers sendMessage()
 sendBtnElm.addEventListener('click', sendMessage);
 
+// create group chat button
+var sendBtnElm = document.getElementById('create-group-chat');
+
+if (!sendBtnElm) {
+    console.log("Error in getting 'create-group-chat' button");
+}
+// AC-01.2 (UI): Send button click triggers create-group-chat()
+sendBtnElm.addEventListener('click', createGroupChat);
+
+function createGroupChat(){
+    alert('This is not currently functional! Look out for functionality soon.');
+};
 
 var chatMessageInput = document.getElementById('message-input');
 
