@@ -9,6 +9,8 @@ const path = require('path');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
+const messengerdb = require('./messengerdb');
+
 // AC-02.6 (Security): CSP header — browser-level defense-in-depth
 app.use((req, res, next) => {
   res.setHeader(
@@ -23,36 +25,75 @@ app.use((req, res, next) => {
 app.use(express.static(path.join(__dirname, 'ui')));
 
 const PORT = process.env.PORT || 8080;
-server.listen(PORT, () => console.log('Server running on port ' + PORT));
+
+(async () => {
+  try {
+    await messengerdb.connect();
+    server.listen(PORT, () => console.log('Server running on port ' + PORT));
+  } catch (err) {
+    console.log('Error>server.js: failed to start — database connection error', err);
+    process.exit(1); // fail fast — don't run a server that can't authenticate anyone
+  }
+})();
 
 // In-memory store: socketId → username
 const userlist = new Map();
 
+// =============================================================
+// Use-Case-04: Authorize User
+// returns true if this connection was authenticated by Use-Case-03
+// =============================================================
+function authorizeUser(socket) {
+  if (!socket || !socket.authenticated) 
+    console.log('Connection has not been authenticated');
+  return socket.authenticated === true;  
+}
+// =============================================================
+// Helper: send an event only to authenticated connections
+// Used by Use-Case-01 (Send Message) and Use-Case-03 (Join Chat)
+// =============================================================
+function sendToAuthenticatedClients(event, data) {
+  userlist.forEach((_, sid) => {
+    const s = io.sockets.sockets.get(sid);
+    if (s && authorizeUser(s)) s.emit(event, data);
+  });
+}
+
 io.on('connection', (socket) => {
+  // AC-04 result: authentication state per connection
+  socket.authenticated = false;   // AC-04
+  console.log('New client connected - socket ID: ' + socket.id )
 
-  socket.on("username", (username) => {
-    // Auto-assign a unique username from the socket ID
-    const pattern = /^\w{3,20}$/;
-    if (!username || !pattern.test(username)) {
-      socket.emit("username", { success: false, message: "Username too short!" });
+
+  // ===========================================================================
+  // Use-Case-03: Join Chat
+  // ===========================================================================
+  socket.on('join', async function({ username, password}) {
+    // AC-03.2: server0side structural validation
+    if (!username || typeof username !== 'string' || 
+        !password || typeof password !== 'string' ||
+        username.trim().length === 0 || password.length === 0 ) {
+      socket.emit('join-error', 'Invalid Request.');  // AC-03.4
       return;
     }
-
-    // Compare usernames case-insensitively
-    const normalized = username.toLowerCase();
-    const taken = [...userlist.values()]
-      .some(name => name.toLowerCase() === normalized);
-    if (taken) {
-      socket.emit("username", { success: false, message: "Username already taken!" });
+    username = username.trim();
+    console.log(`Debug>UC-03: Joing Chat, server received username '${username}'`);
+ 
+    const user = await messengerdb.find(username,password);
+    console.log(username)
+    if (!user) {
+      // AC-03.3: generic message -doesn't say which field failed
+      socket.emit('join-error', 'Invalid username or password'); // AC-03.4
+      console.log(`Debug>UC-03: Join Chat - Invalid username '${username}'`);
       return;
     }
-
-    socket.emit('username', { success: true, message: username }) //Send the user their assigned username
+    socket.authenticated = true;
     userlist.set(socket.id, username);
-    console.log('New client connected - socket ID: ' + socket.id)
-    socket.join("logged-in");
+    socket.emit('join-success', username);
 
-    //UC-02 (AC-02.1): notify all connected clients that a new user joined
+    // UC-02 (AC-02.1): Notify all connected clients that a new user joined
+    io.emit('status', username + ' joined the chat. Number of connected clients: ' + userlist.size);
+    io.emit('user-list', Array.from(userlist.values()));
     io.to("logged-in").emit('status','<i style="color:grey">'+ username +
       ' joined the chat.</i> ');
     io.to("logged-in").emit('userlist', Array.from(userlist.values())); //Send the user the list of online users

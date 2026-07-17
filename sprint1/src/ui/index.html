@@ -34,9 +34,13 @@
       <input type="text" id="username" placeholder="Username" pattern="\w{3,20}" required
         title="Username must be between 3-20 characters" />
 
-      <input type="password" id="password" placeholder="Password" />
+      <input type="password" id="password" placeholder="Type your password here"
+      pattern="^(?=.*[A-Za-z])(?=.*\d).{6,}$" 
+      title="Password must be at least 6 characters long and contain both letters and numbers."
+      required>        
       <br>
       <button class="button" id="joinBtn">Join Chat</button>
+      <div id="login-error" style="color: red;"></div>
     </div>
 
   </div>

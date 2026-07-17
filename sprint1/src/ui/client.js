@@ -192,6 +192,44 @@ socket.on('status', function(data) {
 // =============================================================================
 
 var myUsername = null;
+document.getElementById('joinBtn').addEventListener('click', joinChat);
+function joinChat() {
+  //input validation here before sending to the server
+  const username = document.getElementById('username').value;
+  const pattern = /^\w{3,20}$/;
+  if (!username || !pattern.test(username)) {
+      document.getElementById('login-error').textContent="Username cannot be empty and must be between 3-20 characters!";
+      return;
+  }
+  const password = document.getElementById('password').value;
+  const passwordpattern = /^(?=.*[A-Za-z])(?=.*\d).{6,}$/;
+  if (!password || !passwordpattern.test(password)) {
+    document.getElementById('login-error').textContent="Password must be at least 6 characters long and contain both letters and numbers.";
+    return;
+  }
+  document.getElementById('login-error').textContent = '';
+  // AC-03.1: send credentials (as JSON object) to server (UC-03)
+  const logincredentials= { username: username, password: password };
+  socket.emit('join', logincredentials);
+}
+socket.on('join-success', function(username) {
+  //the following lines moved from joinChat to the authentication confirmation from the server
+  document.getElementById('loginUI').style.display = 'none';
+  document.getElementById('chatUI').style.display = '';
+  document.getElementById('display-name').textContent = username;
+});
+
+socket.on('join-error', function(message) {
+  document.getElementById('login-error').textContent = message;
+});
+
+socket.on('not-authorized', function() {
+  console.log("Debug>this client has not been authenticated!");
+});
+socket.on('user-list', (users) => {
+  console.log("Debug>got user-list= " + JSON.stringify(users));
+  document.getElementById('user-list').textContent = JSON.stringify(users);
+});
 
 socket.on("username", ({ success, message }) => {
     if (!success) {
@@ -268,21 +306,6 @@ socket.on('userlist', function(data) {
         onlineUserCount.textContent = data.length + " online users";
     }
 });
-
-// =============================================================================
-// Use-Case-4: Login and create account
-// =============================================================================
-
-document.getElementById('joinBtn').addEventListener('click', joinChat);
-function joinChat() {
-    const username = document.getElementById('username').value;
-    const pattern = /^\w{3,20}$/;
-    if (!username || !pattern.test(username)) {
-        alert("Username cannot be empty and must be between 3-20 characters long!");
-        return;
-    }
-    socket.emit('username', username)
-};
 
 const typingUsers = new Set();
 const typingTimeouts = new Map();
