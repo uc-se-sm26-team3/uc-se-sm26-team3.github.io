@@ -185,6 +185,40 @@ io.on('connection', (socket) => {
     io.to(socket.id).emit('private-message', dataSender);
   });
 
+  // Use-Case-12: Create Account
+  socket.on('create', async function({ username, password }) {
+    if (!username || typeof username !== 'string' ||
+        !password || typeof password !== 'string' ||
+        username.trim().length === 0 || password. length === 0) { // AC-12.3
+    socket.emit('create-error', 'Invalid request. '); // AC-12.8
+    return;
+    }
+    username = username.trim();
+
+    // server independently re-validates format - client can be bypassed
+    const usernamePattern = /^\w{3,20}$/;
+    const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d).{6,}$/;
+    if (!usernamePattern. test(username) ) {
+      socket. emit('create-error', 'Username must be 3-20 characters (letters, numbers, underscore).');
+      return; // AC-12.8
+    }
+    if (!passwordPattern. test(password) ) {
+      socket.emit('create-error', 'Password must be at least 6 characters with letters and numbers.');
+      return; // AC-12.8
+    }
+  let result;
+  try {
+    result = await messengerdb.create(username, password);
+  } catch (err) {
+    socket.emit('create-error', 'Server error. Please try again.'); // AC-12.8
+    return;
+  }
+  if (!result.success) {
+    socket.emit('create-error', result.message); // AC-12.8
+    return;
+  }
+  socket.emit('create-success', username); // AC-12.7: send the 'create-success' event to the client
+  });
   socket.on('typing', () => {
     const sender = userlist.get(socket.id);
     data = {

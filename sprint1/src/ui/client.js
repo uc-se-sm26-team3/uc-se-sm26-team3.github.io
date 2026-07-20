@@ -355,3 +355,58 @@ function updateTypingDisplay() {
         .show()
         .text(DOMPurify.sanitize(message));
 }
+
+// =============================================================================
+// Use-Case-12: Create Account 
+// =============================================================================
+
+// Toggle: Login -> Create
+document.getElementById('showCreateButton').addEventListener('click', function() {
+  document.getElementById('loginUI').style.display = 'none';
+  document.getElementById('createAccountUI').style.display = '';
+  document.getElementById('login-error').textContent = '';
+});
+
+// Toggle: Create -> Login
+document.getElementById('showLoginBtn').addEventListener('click', () => {
+  document.getElementById('createAccountUI').style.display = 'none';
+  document.getElementById('loginUI').style.display = '';
+  document.getElementById('create-error').textContent = '';
+});
+
+//Create Account:
+document.getElementById('createAccountButton').addEventListener('click', createAccount);
+
+function createAccount() {
+  // client-side format validation before submission
+  const username = document.getElementById('create-username' ) .value;
+  const pattern = /^\w{3,20}$/;
+  if (!username || !pattern. test(username) ) {
+    document.getElementById('create-error').textContent =
+    "Username cannot be empty and must be between 3-20 characters!";
+    return;
+  }
+  const password = document.getElementById('create-password' ).value;
+  const passwordpattern = /^(?=.*[A-Za-z])(?=.*\d).{6,}$/;
+  if (!password || !passwordpattern. test(password)) {
+    document.getElementById('create-error').textContent =
+    "Password must be at least 6 characters long and contain both letters and numbers.";
+    return;
+  }
+
+  document.getElementById('create-error').textContent = '';
+  socket.emit('create', { username: username, password: password });
+};
+
+// clear confirmation on success, shown on the now-visible login screen
+socket. on('create-success', function(username) {
+  document.getElementById('createAccountUI').style.display = 'none';
+  document.getElementById('loginUI').style.display = '';
+  document.getElementById('create-error').textContent = '';
+  document.getElementById('login-error'). innerHTML = `<span style="color: green;">Account '${username}' has been created! You can now log in.</span>`;
+});
+
+// error message on failure
+socket. on('create-error', function(message) {
+  document.getElementById('create-error').textContent = message;
+});

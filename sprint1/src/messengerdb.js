@@ -30,5 +30,29 @@ const find = async (username, password)=>{
   return user;
 }
 
+// Create Account - insert a new user if username is free
+// returns {success: true } or {success: fasle, message}
+const create = async (username, password) => {
+  console.log(`Debug>messengerdb.js: create user '${username}'`);
 
-module.exports = { connect, find };
+  // AC-05.4 - data layer re-validates format
+  const usernamePattern = /^\w{3,20}$/;
+  const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d).{6,}$/;
+  if (!usernamePattern.test(username) || !passwordPattern.test(password)) {
+    return { success: false, message: 'Invalid username or password format' };  //AC-05.8
+  };
+
+  //Check if username aleady exists
+  const existing = await users.findOne({ username: username });
+  if (existing) {
+    return { success: false, message: 'Username already exists' };  //AC-05.8
+  };
+
+  //AC-05.6 - hash password before storing
+  const hashedPassword = await bcrypt.hash(password, 10);
+  await users.insertOne({ username: username, password: hashedPassword });
+  return { success: true }; //AC-05.7
+};
+
+
+module.exports = { connect, find, create };

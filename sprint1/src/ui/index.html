@@ -41,8 +41,23 @@
       <br>
       <button class="button" id="joinBtn">Join Chat</button>
       <div id="login-error" style="color: red;"></div>
+      <p>Don't have an account? <a href="#"id="showCreateButton">Create Account</a></p>
     </div>
 
+  </div>
+
+  <div id="createAccountUI" style = "display:none;">
+    <h2>Create New Account</h2>
+    <div class="createAccountContainer">
+      <label for="Username">Username: </label> 
+      <input type="text" id="create-username" placeholder="Username (3-20 characters)" maxlength="20">
+      <br>
+      <label for="password">Password: </label>
+      <input type="password" id="create-password" placeholder="Password (min 6 chars, letters + numbers)" maxlength="72">
+      <button class="button round" id="createAccountButton">Create</button>
+      <p id="create-error" style="color: red; "></p>
+      <p>Already have an account? <a href="#" id="showLoginBtn">Log in here</a></p>
+    </div>
   </div>
 
   <div id="chatUI" style="display: none" class="chatUI">
